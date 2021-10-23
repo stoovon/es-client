@@ -1,0 +1,17 @@
+{
+  "Id": "00000000-0000-0000-0000-000000000000",
+  "Amount": {
+    "amount": 9999,
+    "currency": "USD"
+  },
+  "Beneficiary": {
+    "Name": "Blue",
+    "AccountNumber": "12345678",
+    "BankId": "333333"
+  },
+  "Debtor": {
+    "Name": "Green",
+    "AccountNumber": "87654321",
+    "BankId": "444444"
+  }
+}
