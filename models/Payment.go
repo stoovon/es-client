@@ -11,5 +11,5 @@ type Payment struct {
 	Beneficiary externalModels.Party
 	Debtor      externalModels.Party
 	Id          uuid.UUID
-	Version 	int
+	Version     int
 }

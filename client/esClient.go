@@ -68,7 +68,7 @@ func (e *EsClient) IndexPayments(payments ...*models.Payment) error {
 	var wg sync.WaitGroup
 
 	errors := make(chan error)
-	wgDone:= make(chan bool)
+	wgDone := make(chan bool)
 
 	for i, payment := range payments {
 		wg.Add(1)
@@ -118,15 +118,15 @@ func (e *EsClient) IndexPayments(payments ...*models.Payment) error {
 		}(i, payment)
 	}
 
-	go func () {
+	go func() {
 		wg.Wait()
 		close(wgDone)
 	}()
 
 	select {
-	case <- wgDone:
+	case <-wgDone:
 		return nil
-	case err := <- errors:
+	case err := <-errors:
 		close(errors)
 		return fmt.Errorf("error inserting payment: %w", err)
 	}

@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/stoovon/es-client/strategy"
 	"log"
 	"strings"
+
+	"github.com/stoovon/es-client/strategy"
 
 	"github.com/Rhymond/go-money"
 	"github.com/google/uuid"
@@ -85,7 +86,7 @@ func newPayment() (*models.Payment, error) {
 			AccountNumber: "12345678",
 			BankId:        "222222",
 		},
-		Id: id,
+		Id:      id,
 		Version: 0,
 	}, nil
 }
