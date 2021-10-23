@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/stoovon/es-client/mapper"
 
@@ -63,42 +64,72 @@ func (e *EsClient) ClusterInfo() error {
 	return err
 }
 
-func (e *EsClient) IndexPayment(payment *models.Payment) error {
-	doc, err := json.Marshal(payment)
-	if err != nil {
-		return fmt.Errorf("unable to marshal payment: %w", err)
+func (e *EsClient) IndexPayments(payments ...*models.Payment) error {
+	var wg sync.WaitGroup
+
+	errors := make(chan error)
+	wgDone:= make(chan bool)
+
+	for i, payment := range payments {
+		wg.Add(1)
+
+		go func(i int, payment *models.Payment) {
+			defer wg.Done()
+
+			doc, err := json.Marshal(payment)
+			if err != nil {
+				errors <- fmt.Errorf("error encoding payment: %w", err)
+				return
+			}
+
+			req := esapi.IndexRequest{
+				Index:      "payments",
+				DocumentID: payment.Id.String(),
+				Body:       bytes.NewReader(doc),
+				Refresh:    "true", // Force payment to appear in index; use for demo, but not for production
+			}
+
+			res, err := req.Do(context.Background(), e.client)
+			if err != nil {
+				errors <- fmt.Errorf("error getting response to index request: %w", err)
+				return
+			}
+
+			defer func(Body io.ReadCloser) {
+				err = Body.Close()
+
+				if err != nil {
+					errors <- fmt.Errorf("error closing payment index response: %w", err)
+				}
+			}(res.Body)
+
+			if res.IsError() {
+				errors <- fmt.Errorf("error indexing payment ID: %s", payment.Id.String())
+				return
+			}
+
+			var result externalModels.IndexResponse
+			if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+				errors <- fmt.Errorf("error parsing the payment index response body: %w", err)
+				return
+			}
+
+			log.Printf("[%s] %s; version=%d", res.Status(), result.Result, result.Version)
+		}(i, payment)
 	}
 
-	req := esapi.IndexRequest{
-		Index:      "payments",
-		DocumentID: payment.Id.String(),
-		Body:       bytes.NewReader(doc),
-		Refresh:    "true", // Force payment to appear in index; use for demo, but not for production
+	go func () {
+		wg.Wait()
+		close(wgDone)
+	}()
+
+	select {
+	case <- wgDone:
+		return nil
+	case err := <- errors:
+		close(errors)
+		return fmt.Errorf("error inserting payment: %w", err)
 	}
-
-	res, err := req.Do(context.Background(), e.client)
-	if err != nil {
-		return fmt.Errorf("error getting response to index request: %w", err)
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-
-		err = fmt.Errorf("error closing payment index response: %w", err)
-	}(res.Body)
-
-	if res.IsError() {
-		return fmt.Errorf("error indexing payment ID: %s", payment.Id.String())
-	}
-
-	var result externalModels.IndexResponse
-	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-		return fmt.Errorf("error parsing the payment index response body: %w", err)
-	}
-
-	log.Printf("[%s] %s; version=%d", res.Status(), result.Result, result.Version)
-
-	return err
 }
 
 func (e *EsClient) FindPayments() error {

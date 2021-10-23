@@ -42,13 +42,18 @@ func getClusterInfo(es *client.EsClient) {
 
 func createPayment(es *client.EsClient) {
 	var payment *models.Payment
+	var payment2 *models.Payment
 	var err error
 
 	if payment, err = newPayment(); err != nil {
 		log.Fatalf("Unable to instantiate new payment: %v", err)
 	}
 
-	if err = es.IndexPayment(payment); err != nil {
+	if payment2, err = newPayment(); err != nil {
+		log.Fatalf("Unable to instantiate new payment: %v", err)
+	}
+
+	if err = es.IndexPayments([]*models.Payment{payment, payment2}...); err != nil {
 		log.Fatalf("Unable to index new payment: %v", err)
 	}
 
