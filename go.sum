@@ -1,4 +1,6 @@
 github.com/Rhymond/go-money v1.0.3 h1:uPv3ZrrV1s7Phzr3hG/3PeykYrlrKlyo0B29nxd/Fao=
 github.com/Rhymond/go-money v1.0.3/go.mod h1:iHvCuIvitxu2JIlAlhF0g9jHqjRSr+rpdOs7Omqlupg=
+github.com/elastic/go-elasticsearch/v8 v8.0.0-20211021114623-d823a44f1eb7 h1:6/QGW6vlqpRAtbyHt8fEYN9CEFx/PNa4oqi6dUksdm4=
+github.com/elastic/go-elasticsearch/v8 v8.0.0-20211021114623-d823a44f1eb7/go.mod h1:xe9a/L2aeOgFKKgrO3ibQTnMdpAeL0GC+5/HpGScSa4=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
