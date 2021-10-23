@@ -1,0 +1,4 @@
+github.com/Rhymond/go-money v1.0.3 h1:uPv3ZrrV1s7Phzr3hG/3PeykYrlrKlyo0B29nxd/Fao=
+github.com/Rhymond/go-money v1.0.3/go.mod h1:iHvCuIvitxu2JIlAlhF0g9jHqjRSr+rpdOs7Omqlupg=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
