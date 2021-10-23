@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/stoovon/es-client/strategy"
 	"log"
 	"strings"
 
@@ -43,6 +44,7 @@ func getClusterInfo(es *client.EsClient) {
 func createPayment(es *client.EsClient) {
 	var payment *models.Payment
 	var payment2 *models.Payment
+
 	var err error
 
 	if payment, err = newPayment(); err != nil {
@@ -52,6 +54,9 @@ func createPayment(es *client.EsClient) {
 	if payment2, err = newPayment(); err != nil {
 		log.Fatalf("Unable to instantiate new payment: %v", err)
 	}
+
+	payment = strategy.UpdatePaymentStrategy(payment)
+	payment2 = strategy.UpdatePaymentStrategy(payment2)
 
 	if err = es.IndexPayments([]*models.Payment{payment, payment2}...); err != nil {
 		log.Fatalf("Unable to index new payment: %v", err)
@@ -81,6 +86,7 @@ func newPayment() (*models.Payment, error) {
 			BankId:        "222222",
 		},
 		Id: id,
+		Version: 0,
 	}, nil
 }
 

@@ -28,5 +28,6 @@ func PaymentMapper(payment externalModels.Payment) (*models.Payment, error) {
 		Beneficiary: payment.Beneficiary,
 		Debtor:      payment.Debtor,
 		Id:          id,
+		Version:     payment.Version,
 	}, nil
 }

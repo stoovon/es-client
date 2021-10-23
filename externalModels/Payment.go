@@ -16,4 +16,5 @@ type Payment struct {
 	Amount      Amount `json:"Amount"`
 	Beneficiary Party  `json:"Beneficiary"`
 	Debtor      Party  `json:"Debtor"`
+	Version     int    `json:"Version"`
 }
