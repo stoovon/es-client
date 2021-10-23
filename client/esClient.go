@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/stoovon/es-client/mapper"
 	"io"
 	"log"
+
+	"github.com/stoovon/es-client/mapper"
 
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/stoovon/es-client/externalModels"
@@ -124,7 +125,6 @@ func (e *EsClient) FindPayments() error {
 		e.client.Search.WithTrackTotalHits(true),
 		e.client.Search.WithPretty(),
 	)
-
 	if err != nil {
 		return fmt.Errorf("error getting find payment response: %w", err)
 	}
