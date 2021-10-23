@@ -29,6 +29,7 @@ func main() {
 
 	getClusterInfo(es)
 	createPayment(es)
+	findPayments(es)
 }
 
 func getClusterInfo(es *client.EsClient) {
@@ -76,4 +77,11 @@ func newPayment() (*models.Payment, error) {
 		},
 		Id: id,
 	}, nil
+}
+
+func findPayments(es *client.EsClient) {
+	if err := es.FindPayments(); err != nil {
+		log.Fatalf("Unable to find payments: %v", err)
+	}
+	printSeparator("=")
 }

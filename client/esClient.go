@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/stoovon/es-client/mapper"
 	"io"
 	"log"
 
@@ -95,6 +96,84 @@ func (e *EsClient) IndexPayment(payment *models.Payment) error {
 	}
 
 	log.Printf("[%s] %s; version=%d", res.Status(), result.Result, result.Version)
+
+	return err
+}
+
+func (e *EsClient) FindPayments() error {
+	var result externalModels.FindResponse
+
+	var buf bytes.Buffer
+	query := externalModels.ESQuery{
+		Query: externalModels.Query{
+			Match: map[string]string{
+				"Beneficiary.Name": "Ada Lovelace",
+				//"Amount.amount": 9999,
+			},
+		},
+	}
+
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		return fmt.Errorf("error encoding find payment query: %w", err)
+	}
+
+	res, err := e.client.Search(
+		e.client.Search.WithContext(context.Background()),
+		e.client.Search.WithIndex("payments"),
+		e.client.Search.WithBody(&buf),
+		e.client.Search.WithTrackTotalHits(true),
+		e.client.Search.WithPretty(),
+	)
+
+	if err != nil {
+		return fmt.Errorf("error getting find payment response: %w", err)
+	}
+	defer func(Body io.ReadCloser) {
+		err = Body.Close()
+
+		if err != nil {
+			err = fmt.Errorf("error closing find payment response: %w", err)
+		}
+	}(res.Body)
+
+	if res.IsError() {
+		var e map[string]interface{}
+
+		if err = json.NewDecoder(res.Body).Decode(&e); err != nil {
+			return fmt.Errorf("error parsing the response body: %w", err)
+		} else {
+			return fmt.Errorf("[%s] %s: %s",
+				res.Status(),
+				e["error"].(map[string]interface{})["type"],
+				e["error"].(map[string]interface{})["reason"],
+			)
+		}
+	}
+
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return fmt.Errorf("error parsing the response body: %w", err)
+	}
+
+	log.Printf(
+		"[%s] %d hit(s); took %dms",
+		res.Status(),
+		result.Hits.Total.Value,
+		result.Took,
+	)
+
+	for _, hit := range result.Hits.Hits {
+		payment, err := mapper.PaymentMapper(hit.Source)
+		if err != nil {
+			return fmt.Errorf("error mapping the payment: %w", err)
+		}
+
+		var renderedPayment []byte
+		if renderedPayment, err = json.MarshalIndent(payment, "", "\t"); err != nil {
+			return fmt.Errorf("error rendering the payment: %w", err)
+		}
+
+		log.Printf(" * ID=%s\n%s", hit.Id, renderedPayment)
+	}
 
 	return err
 }
