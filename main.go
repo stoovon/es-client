@@ -1,8 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
+
+	"github.com/Rhymond/go-money"
+	"github.com/google/uuid"
+	"github.com/stoovon/es-client/externalModels"
+	"github.com/stoovon/es-client/models"
 
 	"github.com/stoovon/es-client/client"
 )
@@ -22,6 +28,7 @@ func main() {
 	}
 
 	getClusterInfo(es)
+	createPayment(es)
 }
 
 func getClusterInfo(es *client.EsClient) {
@@ -30,4 +37,43 @@ func getClusterInfo(es *client.EsClient) {
 	}
 
 	printSeparator("~")
+}
+
+func createPayment(es *client.EsClient) {
+	var payment *models.Payment
+	var err error
+
+	if payment, err = newPayment(); err != nil {
+		log.Fatalf("Unable to instantiate new payment: %v", err)
+	}
+
+	if err = es.IndexPayment(payment); err != nil {
+		log.Fatalf("Unable to index new payment: %v", err)
+	}
+
+	printSeparator("-")
+}
+
+func newPayment() (*models.Payment, error) {
+	var id uuid.UUID
+	var err error
+
+	if id, err = uuid.NewRandom(); err != nil {
+		return nil, fmt.Errorf("unable to create payment Id: %w", err)
+	}
+
+	return &models.Payment{
+		Amount: *money.New(1337, money.GBP),
+		Beneficiary: externalModels.Party{
+			Name:          "Ada Lovelace",
+			AccountNumber: "12345678",
+			BankId:        "111111",
+		},
+		Debtor: externalModels.Party{
+			Name:          "Charles Babbage",
+			AccountNumber: "12345678",
+			BankId:        "222222",
+		},
+		Id: id,
+	}, nil
 }
